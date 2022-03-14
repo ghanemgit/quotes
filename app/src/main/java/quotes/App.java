@@ -3,88 +3,95 @@
  */
 package quotes;
 
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 
 public class App {
-    public static void main(String[] args) throws FileNotFoundException {
+
+    public static void main(String[] args) throws Exception {
 
         Gson gson = new Gson();
         Quotes quotes;
-
+        String oneQuote = "";
         Reader reader = new FileReader("quotes.json");
-        JsonReader reader1 = new JsonReader(reader);
 
-        JsonArray array = JsonParser.parseReader(reader1).getAsJsonArray();
-        System.out.println(array.size());
-        int randomIndex = (int) Math.floor(Math.random()*(137));
+        File offlineJsonFile = new File("quotes.json");
 
-        quotes = gson.fromJson(array.get(randomIndex),Quotes.class);
+        try {
 
-        System.out.println(quotes.author);
-        System.out.println(quotes.likes);
-        System.out.println(quotes.text);
+            URL quoteUrl = new URL("https://favqs.com/api/qotd");
+
+            HttpURLConnection quoteHttpURLConnection = (HttpURLConnection) quoteUrl.openConnection();
+
+            quoteHttpURLConnection.setRequestMethod("GET");
+
+            InputStreamReader quoteInputStreamReader = new InputStreamReader(quoteHttpURLConnection.getInputStream());
 
 
+            BufferedReader quoteBufferedReader = new BufferedReader(quoteInputStreamReader);
+            oneQuote = quoteBufferedReader.readLine();
+
+
+
+
+            Quote fromJsonQuote = gson.fromJson(oneQuote, Quote.class);
+            System.out.println(fromJsonQuote);
+
+        } catch (Exception e) {
+
+            System.err.println("Sorry, something went wrong");
+
+            //To print quote in offline case
+
+            JsonReader reader1 = new JsonReader(reader);
+
+            JsonArray array = JsonParser.parseReader(reader1).getAsJsonArray();
+
+            int randomIndex = (int) Math.floor(Math.random() * (137));
+
+            quotes = gson.fromJson(array.get(randomIndex), Quotes.class);
+
+            System.out.println(quotes.author);
+            System.out.println(quotes.likes);
+            System.out.println(quotes.text);
+        }
+
+
+        //append new quote to local file if connection true.
+        try (FileWriter offlineJsonFileWriter = new FileWriter(offlineJsonFile,true)){
+
+                BufferedWriter bufferedWriter = new BufferedWriter(offlineJsonFileWriter);
+                bufferedWriter.write(oneQuote);
+                bufferedWriter.newLine();
+                bufferedWriter.close();
+
+        }
 
 
     }
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-////        String [] arr = new String[0];
-////        Quotes quotes = new Quotes(arr,"Mohamamd ghanem",1500,"Hello world");
-//        Gson gson = new Gson();
-////        String myJson = gson.toJson(quotes);
-////        System.out.println(myJson);
-//        GsonBuilder gsonBuilder = new GsonBuilder();
-////        Quotes myObj = gson.fromJson(myJson,Quotes.class);
-////        System.out.println(myObj);
+///////////////////////////////////////////////////Lab08\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//Gson gson = new Gson();
+//    Quotes quotes;
 //
-//        //System.out.println(quotes.jsonFileReader("quotes.json",quotes));
+//    Reader reader = new FileReader("quotes.json");
+//    JsonReader reader1 = new JsonReader(reader);
 //
-//        // File path is passed as parameter
-//        File file = new File(
-//                "quotes.json");
+//    JsonArray array = JsonParser.parseReader(reader1).getAsJsonArray();
+//    //System.out.println(array.size());
+//    int randomIndex = (int) Math.floor(Math.random()*(137));
 //
-//        // Note:  Double backquote is to avoid compiler
-//        // interpret words
-//        // like \test as \t (ie. as a escape sequence)
+//        quotes = gson.fromJson(array.get(randomIndex),Quotes.class);
 //
-//        // Creating an object of BufferedReader class
-//        BufferedReader br
-//                = new BufferedReader(new FileReader(file));
-//
-//        // Declaring a string variable
-//        String st;
-//        // Condition holds true till
-//        // there is character in a string
-//        String [] myObj;
-//        while ((st = br.readLine()) != null)
-//
-//            // Print the string
-//
-//
-//        myObj = gson.fromJson(st,String[].class);
+//        System.out.println(quotes.author);
+//        System.out.println(quotes.likes);
+//        System.out.println(quotes.text);
